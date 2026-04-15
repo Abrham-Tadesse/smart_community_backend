@@ -30,3 +30,21 @@ const userSchema = new mongoose.Schema = {
 
 
 }
+
+
+//  Creating vertual property to fetch issues created by the user 
+userSchema.vertual("issue", {
+    ref : "Issue",
+    localField : "_id",
+    foreignField : "creator"
+})
+
+
+
+
+
+
+
+
+const User = mongoose.model("User", userSchema);
+module.exports = User;

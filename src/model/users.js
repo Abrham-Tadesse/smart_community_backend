@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 
 
-const userSchema = new mongoose.Schema = {
+const userSchema = new mongoose.Schema({
        name : {
         type : String,
         required : true,
@@ -25,15 +25,25 @@ const userSchema = new mongoose.Schema = {
         required : true,
         match: [/^(?:\+251|0)?9\d{8}$/, "Invalid phone number"],
         trim : true,
+       },
+       password : {
+        type : String,
+        required : true,
+        validate(value){
+            if(value.length<6)
+            {
+             throw new Error("The password must contain atleast 6 characters");
+            }
+        }
        }
 
 
 
-}
+})
 
 
 //  Creating vertual property to fetch issues created by the user 
-userSchema.vertual("issue", {
+userSchema.virtual("issue", {
     ref : "Issue",
     localField : "_id",
     foreignField : "creator"

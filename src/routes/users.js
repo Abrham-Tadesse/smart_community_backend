@@ -3,11 +3,11 @@ const router = new express.Router();
 const User = require("../model/users");
 
 // Register the user
-  router.post("/users", (req,res)=>{
+  router.post("/users", async(req,res)=>{
        try{
         const user = new User(req.body);
-        user.save();
-        res.status(201).send(user);
+        await user.save();
+        res.status(201).send({user});
 
        }catch(e){
         if(e.code === 1100){
@@ -16,3 +16,7 @@ const User = require("../model/users");
         res.status(400).send("You face " + e + "error");
        }
   })
+
+
+
+  module.exports = router;

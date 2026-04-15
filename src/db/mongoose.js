@@ -1,12 +1,16 @@
-const mongoose = require("monggoose");
+require("dotenv").config();
+const mongoose = require("mongoose");
 
 
-const URL = process.env.MONGODB_URL;
+  const url = process.env.MONGODB_URL;
+
  async function main(){
     try{
-      await mongoose.connect(URL,{});
+      await mongoose.connect(url,{});
 
     }catch(e){
-     throw new Error("Couldn`t connect to mongodb " + e);
+     console.log(e);
     }
  }
+
+ main();

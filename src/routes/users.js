@@ -2,12 +2,14 @@ const express = require("express");
 const router = new express.Router();
 const User = require("../model/users");
 
+
 // Register the user
   router.post("/users", async(req,res)=>{
        try{
-        const user = new User(req.body);
+        const user = new User(req.body); 
         await user.save();
-        res.status(201).send({user});
+        const token = await user.generateAuthTokens();
+        res.status(201).send({user,token});
 
        }catch(e){
         if(e.code === 1100){

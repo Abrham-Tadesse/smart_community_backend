@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
 
 
 const userSchema = new mongoose.Schema({
@@ -35,8 +36,13 @@ const userSchema = new mongoose.Schema({
              throw new Error("The password must contain atleast 6 characters");
             }
         }
-       }
-
+       },
+       tokens : [{
+        token : {
+            type : String,
+            required : true
+        } 
+       }]
 
 
 })
@@ -49,9 +55,25 @@ userSchema.virtual("issue", {
     foreignField : "creator"
 })
 
+userSchema.methods.generateAuthTokens = async function(){
+    const user = this;
+    const token = jwt.sign({_id : user._id.toString()},process.env.JWT_SECRETE);
+    user.tokens = user.tokens.concat({token});
+    await user.save();
 
+    return token;
+}
 
-
+userSchema.statics.findByCredential = async function(email,password){
+      const user = await User.findOne({email});
+      if(!user){
+        throw new Error("Invalid email or password");
+      }
+      const isMatch = await user.password === password;
+      if(!isMatch){
+        throw new Error("Invalid email or password");
+      }
+}
 
 
 

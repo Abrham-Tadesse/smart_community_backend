@@ -19,9 +19,27 @@ const User = require("../model/users");
        }
   })
 // Login a user 
-    router.post("/login",async(req,res)=>{
-     const user = User.findByCredential(req.body.email, req.body.password);
+    router.post("/users/login",async(req,res)=>{
+      try{
+         const user = User.findByCredential(req.body.email, req.body.password);
+         const token = user.generateAuthTokens();
+         res.send({user,token});
+      }catch(e){
+         res.status(400).send("please try again");
+
+      }
     })
+// Log out the user 
+      router.post("/users/logout",async(req,res)=>{
+         try{
+         req.user.tokens = req.user.tokens.filter((token)=>{
+         return token.token !== req.token;
+
+      })
+         }catch(e){
+        res.status(400).send();
+         }
+      })
 
 
   module.exports = router;

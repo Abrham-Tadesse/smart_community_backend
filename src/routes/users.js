@@ -15,10 +15,13 @@ const User = require("../model/users");
         if(e.code === 1100){
            res.status(400).send("The email is already exist ");
         }
-        res.status(400).send("You face " + e + "error");
+        res.status(400).send("You face " + e + " error");
        }
   })
-
+// Login a user 
+    router.post("/login",async(req,res)=>{
+     const user = User.findByCredential(req.body.email, req.body.password);
+    })
 
 
   module.exports = router;

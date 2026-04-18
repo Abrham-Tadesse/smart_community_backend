@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 
 const userSchema = new mongoose.Schema({
@@ -55,6 +56,14 @@ userSchema.virtual("issue", {
     foreignField : "creator"
 })
 
+userSchema.pre("save", async function(){
+    const user = this;
+    if(user.isModified("password")){
+        const hashedPassword = await bcrypt.hash(user.password , 10);
+        user.password = hashedPassword;
+    }
+})
+
 userSchema.methods.generateAuthTokens = async function(){
     const user = this;
     const token = jwt.sign({_id : user._id.toString()},process.env.JWT_SECRETE);
@@ -69,7 +78,7 @@ userSchema.statics.findByCredential = async function(email,password){
       if(!user){
         throw new Error("Invalid email or password");
       }
-      const isMatch = await user.password === password;
+      const isMatch = await bcrypt.compare(password,user.password);
       if(!isMatch){
         throw new Error("Invalid email or password");
       }

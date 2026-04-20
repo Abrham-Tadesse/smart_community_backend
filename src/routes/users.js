@@ -1,6 +1,7 @@
 const express = require("express");
 const router = new express.Router();
 const User = require("../model/users");
+const auth = require("../middleware/auth");
 
 
 // Register the user
@@ -41,7 +42,7 @@ const User = require("../model/users");
          }
       })
 // Update profile
-   router.post("/users/me", async(req,res)=>{
+   router.patch("/users/me",auth, async(req,res)=>{
       const updates = Object.keys(req.body);
       const allowedUpdates = ["name","email","password"];
       const isAllowed = updates.every((update)=>allowedUpdates.includes(update));
@@ -61,5 +62,10 @@ const User = require("../model/users");
    })
 
       
+
+
+
+
+
 
   module.exports = router;

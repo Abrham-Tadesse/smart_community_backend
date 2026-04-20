@@ -21,11 +21,11 @@ const User = require("../model/users");
 // Login a user 
     router.post("/users/login",async(req,res)=>{
       try{
-         const user = User.findByCredential(req.body.email, req.body.password);
-         const token = user.generateAuthTokens();
+         const user = await User.findByCredential(req.body.email, req.body.password);
+         const token = await user.generateAuthTokens();
          res.send({user,token});
       }catch(e){
-         res.status(400).send("please try again");
+         res.status(400).send("please try again" + e);
 
       }
     })
@@ -40,6 +40,26 @@ const User = require("../model/users");
         res.status(400).send();
          }
       })
+// Update profile
+   router.post("/users/me", async(req,res)=>{
+      const updates = Object.keys(req.body);
+      const allowedUpdates = ["name","email","password"];
+      const isAllowed = updates.every((update)=>allowedUpdates.includes(update));
+      const user = req.user;
+      if(!isAllowed) {
+         res.status(400).send("You can`t update some values please check and try again");
+      }
+      try{
+         updates.forEach((update)=>{
+            user[update] = req.body[update];
+         })
+         await user.save();
+         res.send(user);
+      }catch(e){
+       res.status(400).send();
+      }
+   })
 
+      
 
   module.exports = router;

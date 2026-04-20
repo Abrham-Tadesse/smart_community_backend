@@ -35,7 +35,7 @@ const auth = require("../middleware/auth");
          try{
          req.user.tokens = req.user.tokens.filter((token)=>{
          return token.token !== req.token;
-
+         res.status(200).send("You logedout successfully");
       })
          }catch(e){
         res.status(400).send();
@@ -60,7 +60,55 @@ const auth = require("../middleware/auth");
        res.status(400).send();
       }
    })
+// Logout all sessions 
+   
+ router.post("/users/logoutall",auth , async(req,res)=>{
+    try{
+      req.user.tokens = [];
+     await req.user.save();
 
+    res.status(200).send("You logged out successfully");
+   }catch(e){
+      res.status(500).send();
+   }
+ })
+// ACCESSING A USERS
+        router.get("/users/me",auth, async(req,res) => {
+            try{
+           res.send(req.user);
+
+            }catch(e){
+                res.status(500).send("internal server error");
+            }
+        })
+
+//ACCESSING SINGLE USER
+        router.get("/users/:id", async (req,res)=>{
+            const _id = req.params.id;
+            try{
+                const user = await User.findById(_id);
+                if(!user){
+                    return res.status(404).send();
+
+                }
+                res.status(200).send(user);
+
+            }catch(e){
+                res.status(500).send();
+
+            }
+        })
+
+//DELETING A USER
+       router.delete("/users/me",auth, async(req,res)=>{
+          try{
+          await req.user.deleteOne();
+           res.send(req.user);
+
+          }catch(e){
+            res.status(500).send("you do not delete the account");
+          }
+       })
       
 
 

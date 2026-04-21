@@ -4,7 +4,7 @@ const { ref } = require("node:process");
 const validator = require("validator");
 
 
-const issueSchema = new mongoose.Schema = {
+const issueSchema = new mongoose.Schema({
     title : {
         type : String,
         required : true,
@@ -55,7 +55,7 @@ const issueSchema = new mongoose.Schema = {
 
 
 
-} 
+} )
 
 
 

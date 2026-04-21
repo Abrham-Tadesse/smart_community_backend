@@ -5,34 +5,34 @@ const auth = require("../middleware/auth");
 
 
 // Creating an issue
-router.post("/issue",async (req,res)=>{
+router.post("/issues",auth,async (req,res)=>{
     try{
-        const issue = new Issue({...req.body,owner : req.body._id});
+        const issue = new Issue({...req.body, creator : req.user._id});
         await issue.save();
         res.status(201).send(issue);
 
     }catch(e){
-        res.status(401).send();
+        res.status(401).send(e);
     }
 
 })
 // Reading(accessing) issues
 
-router.get("/issue",auth,async (req,res)=>{
+router.get("/issues",auth,async (req,res)=>{
     try{
-        const issues = Issue.find({owner : req.user._id});
+        const issues = await Issue.find({creator : req.user._id});
         res.status(200).send(issues)
     }catch(e){
-        res.status(401).send();
+        res.status(401).send(e);
     }
 
 })
 
 // updating the report
 
-router.patch("/reports/:id", auth, async (req, res) => {
+router.patch("/issues/:id", auth, async (req, res) => {
   const updates = Object.keys(req.body);
-  const allowedUpdates = ["title", "description", "status"]; // fields you allow
+  const allowedUpdates = ["title", "description", "category","affected", "location"]; // fields you allow
   const isValidOperation = updates.every((update) =>
     allowedUpdates.includes(update)
   );
@@ -40,36 +40,41 @@ router.patch("/reports/:id", auth, async (req, res) => {
     return res.status(400).send({ error: "Invalid updates!" });
   }
   try {
-    const report = await Report.findOne({
+    const issue = await Issue.findOne({
       _id: req.params.id,
-      owner: req.user._id   // ensures user owns the report
+      creator: req.user._id   // ensures user owns the report
     });
-    if (!report) {
-      return res.status(404).send();
+    if (!issue) {
+      return res.status(404).send("no issue");
     }
-    updates.forEach((update) => (report[update] = req.body[update]));
-    await report.save();
-    res.send(report);
+    updates.forEach((update) => (issue[update] = req.body[update]));
+    await issue.save();
+    res.send(issue);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send(e.message);
   }
 });
 
 //Deleting an Issue 
 
-router.delete("/reports/:id", auth, async (req, res) => {
+router.delete("/issues/:id", auth, async (req, res) => {
   try {
-    const report = await Report.findOneAndDelete({
+    const issue = await Issue.findOneAndDelete({
       _id: req.params.id,
-      owner: req.user._id   // only owner can delete
+      creator: req.user._id   // only owner can delete
     });
 
-    if (!report) {
-      return res.status(404).send();
+    if (!issue) {
+      return res.status(404).send("error");
     }
 
-    res.send(report);
+    res.send(issue);
   } catch (e) {
     res.status(500).send();
   }
 });
+
+
+
+
+module.exports = router;

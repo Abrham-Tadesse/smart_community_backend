@@ -21,6 +21,8 @@ const issueSchema = new mongoose.Schema({
     },
     severity : {
         type : String,
+        enum : ["Low","Medium","High","Critical"],
+        default : "Medium"
     },
     affected : {
         type : Number,
@@ -48,7 +50,7 @@ const issueSchema = new mongoose.Schema({
     },
     creator : {
         type : mongoose.Schema.Types.ObjectId,
-        ref : "Issue",
+        ref : "User",
         required : true
     }
 

@@ -2,19 +2,20 @@ const express = require("express");
 const Comment = require("../model/comments");
 const auth = require("../middleware/auth");
 const router = express.Router();
+const mmongoose = require("mongoose");
 
 
 
 
 // Creating a comment 
-router.post("/issues/:id/comments",auth,async(req,res)=>{
+router.post("/issues/:issueId/comments",auth,async(req,res)=>{
   try{
-   const comment = await new Commenet({
+   const comment = await new Comment({
     ...req.body,
-     issue : req.params.id,
+     issue : req.params.issueId,
      user : req.user._id
    });
-   comment.save();
+   await comment.save();
    res.status(201).send(comment);
   }catch(e){
     res.status(401).send();
@@ -22,16 +23,27 @@ router.post("/issues/:id/comments",auth,async(req,res)=>{
 })
 
 
-// Reading the comment in an issue
-   router.get("/issues/:id/comments",async(req,res)=>{
-    try {
-      const comment = await Comment.find({issue:req.params.id}).populate("owner").populate("owner","name email");
-      res.send(comment);
+// Reading the comment in an issue;
 
-    }catch(e){
-      res.status(500).send();
+router.get("/issues/:issueId/comments", async (req, res) => {
+  try {
+    console.log("route hit");
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.issueId)) {
+      return res.status(400).send({ error: "Invalid issue ID" });
     }
-   })
+
+    const comments = await Comment.find({
+      issue: req.params.issueId
+    }).populate("user", "name email");
+
+    res.send(comments);   // ✅ IMPORTANT
+
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e.message);
+  }
+});
 
 
 
@@ -41,4 +53,3 @@ router.post("/issues/:id/comments",auth,async(req,res)=>{
 
 
    module.exports = router;
-   

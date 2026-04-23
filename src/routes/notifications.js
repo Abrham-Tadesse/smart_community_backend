@@ -3,7 +3,7 @@ const Notification = require("../model/notfication");
 const auth = require("../middleware/auth");
 const router = express.Router();
 
-//Access the notification 
+//Access the notification
 
 router.get("/notifications", auth, async (req, res) => {
   try {

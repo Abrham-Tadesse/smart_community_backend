@@ -5,22 +5,27 @@ const auth = require("../middleware/auth");
 
 
 // Register the user
-  router.post("/users", async(req,res)=>{
+  router.post("/", async(req,res)=>{
        try{
+            const existingUser = await User.findOne({ email: req.body.email });
+
+            if (existingUser) {
+               return res.status(400).send("Email already exists");
+            }
         const user = new User(req.body); 
         await user.save();
         const token = await user.generateAuthTokens();
         res.status(201).send({user,token});
 
        }catch(e){
-        if(e.code === 1100){
+        if(e.code === 11000){
            res.status(400).send("The email is already exist ");
         }
-        res.status(400).send("You face " + e + " error");
+        res.status(400).send(e.message);
        }
   })
 // Login a user 
-    router.post("/users/login",async(req,res)=>{
+    router.post("/login",async(req,res)=>{
       try{
          const user = await User.findByCredential(req.body.email, req.body.password);
          const token = await user.generateAuthTokens();
@@ -31,18 +36,19 @@ const auth = require("../middleware/auth");
       }
     })
 // Log out the user 
-      router.post("/users/logout",async(req,res)=>{
+      router.post("/logout",async(req,res)=>{
          try{
          req.user.tokens = req.user.tokens.filter((token)=>{
          return token.token !== req.token;
-         res.status(200).send("You logedout successfully");
       })
+      req.user.save();
+      res.status(200).send("You logedout successfully");
          }catch(e){
         res.status(400).send();
          }
       })
 // Update profile
-   router.patch("/users/me",auth, async(req,res)=>{
+   router.patch("/me",auth, async(req,res)=>{
       const updates = Object.keys(req.body);
       const allowedUpdates = ["name","email","password"];
       const isAllowed = updates.every((update)=>allowedUpdates.includes(update));
@@ -62,7 +68,7 @@ const auth = require("../middleware/auth");
    })
 // Logout all sessions 
    
- router.post("/users/logoutall",auth , async(req,res)=>{
+ router.post("/logoutall",auth , async(req,res)=>{
     try{
       req.user.tokens = [];
      await req.user.save();
@@ -73,7 +79,7 @@ const auth = require("../middleware/auth");
    }
  })
 // ACCESSING A USERS
-        router.get("/users/me",auth, async(req,res) => {
+        router.get("/me",auth, async(req,res) => {
             try{
            res.send(req.user);
 
@@ -83,7 +89,7 @@ const auth = require("../middleware/auth");
         })
 
 //ACCESSING SINGLE USER
-        router.get("/users/:id", async (req,res)=>{
+        router.get("/:id", async (req,res)=>{
             const _id = req.params.id;
             try{
                 const user = await User.findById(_id);
@@ -100,7 +106,7 @@ const auth = require("../middleware/auth");
         })
 
 //DELETING A USER
-       router.delete("/users/me",auth, async(req,res)=>{
+       router.delete("/me",auth, async(req,res)=>{
           try{
           await req.user.deleteOne();
            res.send(req.user);

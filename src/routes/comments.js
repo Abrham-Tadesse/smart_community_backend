@@ -2,7 +2,7 @@ const express = require("express");
 const Comment = require("../model/comments");
 const auth = require("../middleware/auth");
 const router = express.Router();
-const mmongoose = require("mongoose");
+const mongoose = require("mongoose");
 
 
 
@@ -18,7 +18,7 @@ router.post("/issues/:issueId/comments",auth,async(req,res)=>{
    await comment.save();
    res.status(201).send(comment);
   }catch(e){
-    res.status(401).send();
+    res.status(400).send();
   }
 })
 
@@ -37,8 +37,7 @@ router.get("/issues/:issueId/comments", async (req, res) => {
       issue: req.params.issueId
     }).populate("user", "name email");
 
-    res.send(comments);   // ✅ IMPORTANT
-
+    res.send(comments); 
   } catch (e) {
     console.log(e);
     res.status(500).send(e.message);

@@ -2,11 +2,11 @@ const express = require("express");
 const Issue = require("../model/issue");
 const router = express.Router();
 const auth = require("../middleware/auth");
-const Commenet = require('../model/comments');
+const Comment = require('../model/comments');
 
 
 // Creating an issue
-router.post("/issues",auth,async (req,res)=>{
+router.post("/",auth,async (req,res)=>{
     try{
         const issue = new Issue({...req.body, creator : req.user._id});
         await issue.save();
@@ -19,7 +19,7 @@ router.post("/issues",auth,async (req,res)=>{
 })
 // Reading(accessing) issues
 
-router.get("/issues",auth,async (req,res)=>{
+router.get("/",auth,async (req,res)=>{
     try{
         const issues = await Issue.find({creator : req.user._id});
         res.status(200).send(issues)
@@ -31,7 +31,7 @@ router.get("/issues",auth,async (req,res)=>{
 
 // updating the report
 
-router.patch("/issues/:id", auth, async (req, res) => {
+router.patch("/:id", auth, async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ["title", "description", "category","affected", "location"]; // fields you allow
   const isValidOperation = updates.every((update) =>
@@ -58,7 +58,7 @@ router.patch("/issues/:id", auth, async (req, res) => {
 
 //Deleting an Issue 
 
-router.delete("/issues/:id", auth, async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
     const issue = await Issue.findOneAndDelete({
       _id: req.params.id,
@@ -76,9 +76,9 @@ router.delete("/issues/:id", auth, async (req, res) => {
 });
 
 // Creating a comment 
-router.post("/issues/:id/comments",auth,async(req,res)=>{
+router.post("/:id/comments",auth,async(req,res)=>{
   try{
-   const comment = await new Commenet({
+   const comment = await new Comment({
     ...req.body,
      issue : req.params.id,
      user : req.user._id
@@ -92,7 +92,7 @@ router.post("/issues/:id/comments",auth,async(req,res)=>{
 
 
 // Reading the comment in an issue
-   router.get("/issues/:id/comments",async(req,res)=>{
+   router.get("/:id/comments",async(req,res)=>{
     try {
       const comment = await Comment.find({issue:req.params.id}).populate("owner").populate("owner","name email");
       res.send(comment);

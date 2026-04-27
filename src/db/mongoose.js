@@ -14,3 +14,18 @@ const mongoose = require("mongoose");
  }
 
  main();
+
+
+
+ //Deployment version
+
+            // async function connectDB() {
+            //   try {
+            //     await mongoose.connect(url);
+            //     console.log("✅ MongoDB connected");
+            //   } catch (e) {
+            //     console.error("❌ MongoDB connection failed:", e.message);
+            //     process.exit(1); // kill the app
+            //   }
+            // }
+        // module.exports = connectDB;

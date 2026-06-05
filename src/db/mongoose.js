@@ -1,31 +1,28 @@
-require("dotenv").config();
+require("dotenv").config({ path: "./src/.env" });
 const mongoose = require("mongoose");
 
 
-  const url = process.env.MONGODB_URL;
+const URL = process.env.MONGODB_URL;
 
- async function main(){
-    try{
-      await mongoose.connect(url,{});
+async function main() {
+  try {
+    await mongoose.connect(URL, {});
+  } catch (e) {
+    console.log(e);
+  }
+}
 
-    }catch(e){
-     console.log(e);
-    }
- }
+main();
 
- main();
+//Deployment version
 
-
-
- //Deployment version
-
-            // async function connectDB() {
-            //   try {
-            //     await mongoose.connect(url);
-            //     console.log("✅ MongoDB connected");
-            //   } catch (e) {
-            //     console.error("❌ MongoDB connection failed:", e.message);
-            //     process.exit(1); // kill the app
-            //   }
-            // }
-        // module.exports = connectDB;
+// async function connectDB() {
+//   try {
+//     await mongoose.connect(url);
+//     console.log("✅ MongoDB connected");
+//   } catch (e) {
+//     console.error("❌ MongoDB connection failed:", e.message);
+//     process.exit(1); // kill the app
+//   }
+// }
+// module.exports = connectDB;

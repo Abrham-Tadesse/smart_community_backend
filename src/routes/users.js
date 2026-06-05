@@ -21,7 +21,7 @@ const auth = require("../middleware/auth");
         if(e.code === 11000){
            res.status(400).send("The email is already exist ");
         }
-        res.status(400).send(e.message);
+        res.status(400).send(e.message + "from the server");
        }
   })
 // Login a user 

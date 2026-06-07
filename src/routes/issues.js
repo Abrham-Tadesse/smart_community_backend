@@ -75,32 +75,34 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
-// Creating a comment 
-router.post("/:id/comments",auth,async(req,res)=>{
-  try{
-   const comment = await new Comment({
-    ...req.body,
-     issue : req.params.id,
-     user : req.user._id
-   });
-   comment.save();
-   res.status(201).send(comment);
-  }catch(e){
-    res.status(401).send();
-  }
-})
 
 
-// Reading the comment in an issue
-   router.get("/:id/comments",async(req,res)=>{
-    try {
-      const comment = await Comment.find({issue:req.params.id}).populate("owner").populate("owner","name email");
-      res.send(comment);
+// // Creating a comment 
+// router.post("/:id/comments",auth,async(req,res)=>{
+//   try{
+//    const comment = await new Comment({
+//     ...req.body,
+//      issue : req.params.id,
+//      user : req.user._id
+//    });
+//    comment.save();
+//    res.status(201).send(comment);
+//   }catch(e){
+//     res.status(401).send();
+//   }
+// })
 
-    }catch(e){
-      res.status(500).send();
-    }
-   })
+
+// // Reading the comment in an issue
+//    router.get("/:id/comments",async(req,res)=>{
+//     try {
+//       const comment = await Comment.find({issue:req.params.id}).populate("owner").populate("owner","name email");
+//       res.send(comment);
+
+//     }catch(e){
+//       res.status(500).send();
+//     }
+//    })
 
 
 

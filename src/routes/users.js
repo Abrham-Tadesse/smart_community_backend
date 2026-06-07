@@ -35,16 +35,19 @@ const auth = require("../middleware/auth");
 
       }
     })
-// Log out the user 
-      router.post("/logout",async(req,res)=>{
+// Logout the user 
+      router.post("/logout",auth,async(req,res)=>{
          try{
+            
          req.user.tokens = req.user.tokens.filter((token)=>{
          return token.token !== req.token;
       })
       req.user.save();
-      res.status(200).send("You logedout successfully");
+      res.status(200).send({
+      message: "Logged out successfully"
+    });
          }catch(e){
-        res.status(400).send();
+        res.status(400).send(e.message);
          }
       })
 // Update profile
@@ -54,7 +57,7 @@ const auth = require("../middleware/auth");
       const isAllowed = updates.every((update)=>allowedUpdates.includes(update));
       const user = req.user;
       if(!isAllowed) {
-         res.status(400).send("You can`t update some values please check and try again");
+         res.status(400).send({"message":"You can`t update some values please check and try again"});
       }
       try{
          updates.forEach((update)=>{
@@ -73,7 +76,7 @@ const auth = require("../middleware/auth");
       req.user.tokens = [];
      await req.user.save();
 
-    res.status(200).send("You logged out successfully");
+    res.status(200).send({"message" : "You logged out successfully"});
    }catch(e){
       res.status(500).send();
    }

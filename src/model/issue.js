@@ -21,8 +21,8 @@ const issueSchema = new mongoose.Schema({
     },
     severity : {
         type : String,
-        enum : ["Low","Medium","High","Critical"],
-        default : "Medium"
+        enum : ["low","medium","high","critical"],
+        default : "medium"
     },
     affected : {
         type : Number,
@@ -31,7 +31,8 @@ const issueSchema = new mongoose.Schema({
             if(value<1){
                 throw new Error ("Please enter the appropriate number of affected peoples");
             }
-        }
+        },
+        default : 1
     },
     location : {
         type : String,

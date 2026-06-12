@@ -31,7 +31,7 @@ const auth = require("../middleware/auth");
          const token = await user.generateAuthTokens();
          res.send({user,token});
       }catch(e){
-         res.status(400).send("please try again" + e);
+         res.status(400).send({"message":"please try again"});
 
       }
     })

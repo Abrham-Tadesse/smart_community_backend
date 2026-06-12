@@ -5,14 +5,17 @@ const auth = require("../middleware/auth");
 const Comment = require('../model/comments');
 
 
+
 // Creating an issue
 router.post("/",auth,async (req,res)=>{
     try{
-        const issue = new Issue({...req.body, creator : req.user._id});
-        await issue.save();
-        res.status(201).send(issue);
+      const issue = new Issue({...req.body, creator : req.user._id});
+      console.log("route hited");
+      await issue.save();
+      res.status(201).send(issue);
 
     }catch(e){
+      console.log(e)
         res.status(401).send(e);
     }
 

@@ -53,7 +53,7 @@ const auth = require("../middleware/auth");
 // Update profile
    router.patch("/me",auth, async(req,res)=>{
       const updates = Object.keys(req.body);
-      const allowedUpdates = ["name","email","password"];
+      const allowedUpdates = ["name","email","password","phone"];
       const isAllowed = updates.every((update)=>allowedUpdates.includes(update));
       const user = req.user;
       if(!isAllowed) {
@@ -66,7 +66,7 @@ const auth = require("../middleware/auth");
          await user.save();
          res.send(user);
       }catch(e){
-       res.status(400).send();
+       res.status(400).send(e.message);
       }
    })
 // Logout all sessions 

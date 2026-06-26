@@ -2,43 +2,60 @@ const express = require("express");
 const Issue = require("../model/issue");
 const router = express.Router();
 const auth = require("../middleware/auth");
-const Comment = require('../model/comments');
-
-
+const Comment = require("../model/comments");
 
 // Creating an issue
-router.post("/",auth,async (req,res)=>{
-    try{
-      const issue = new Issue({...req.body, creator : req.user._id});
-      console.log("route hited");
-      await issue.save();
-      res.status(201).send(issue);
-
-    }catch(e){
-      console.log(e)
-        res.status(401).send(e);
-    }
-
-})
+router.post("/", auth, async (req, res) => {
+  try {
+    const issue = new Issue({ ...req.body, creator: req.user._id });
+    console.log("route hited");
+    await issue.save();
+    res.status(201).send(issue);
+  } catch (e) {
+    console.log(e);
+    res.status(401).send(e);
+  }
+});
 // Reading(accessing) issues
 
-router.get("/",auth,async (req,res)=>{
-    try{
-        const issues = await Issue.find({creator : req.user._id});
-        res.status(200).send(issues)
-    }catch(e){
-        res.status(401).send(e);
+router.get("/", auth, async (req, res) => {
+  try {
+    const issues = await Issue.find({ creator: req.user._id });
+    res.status(200).send(issues);
+  } catch (e) {
+    res.status(401).send(e);
+  }
+});
+
+//Accessing a single issue
+
+router.get("/:id", async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+
+    if (!issue) {
+      return res.status(404).send({ message: "Issue not found" });
     }
 
-})
+    res.send(issue);
+  } catch (e) {
+    res.status(500).send(e);
+  }
+});
 
 // updating the report
 
 router.patch("/:id", auth, async (req, res) => {
   const updates = Object.keys(req.body);
-  const allowedUpdates = ["title", "description", "category","affected", "location"]; // fields you allow
+  const allowedUpdates = [
+    "title",
+    "description",
+    "category",
+    "affected",
+    "location",
+  ]; // fields you allow
   const isValidOperation = updates.every((update) =>
-    allowedUpdates.includes(update)
+    allowedUpdates.includes(update),
   );
   if (!isValidOperation) {
     return res.status(400).send({ error: "Invalid updates!" });
@@ -46,7 +63,7 @@ router.patch("/:id", auth, async (req, res) => {
   try {
     const issue = await Issue.findOne({
       _id: req.params.id,
-      creator: req.user._id   // ensures user owns the report
+      creator: req.user._id, // ensures user owns the report
     });
     if (!issue) {
       return res.status(404).send("no issue");
@@ -59,13 +76,13 @@ router.patch("/:id", auth, async (req, res) => {
   }
 });
 
-//Deleting an Issue 
+//Deleting an Issue
 
 router.delete("/:id", auth, async (req, res) => {
   try {
     const issue = await Issue.findOneAndDelete({
       _id: req.params.id,
-      creator: req.user._id   // only owner can delete
+      creator: req.user._id, // only owner can delete
     });
 
     if (!issue) {
@@ -78,9 +95,7 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
-
-
-// // Creating a comment 
+// // Creating a comment
 // router.post("/:id/comments",auth,async(req,res)=>{
 //   try{
 //    const comment = await new Comment({
@@ -95,7 +110,6 @@ router.delete("/:id", auth, async (req, res) => {
 //   }
 // })
 
-
 // // Reading the comment in an issue
 //    router.get("/:id/comments",async(req,res)=>{
 //     try {
@@ -106,10 +120,5 @@ router.delete("/:id", auth, async (req, res) => {
 //       res.status(500).send();
 //     }
 //    })
-
-
-
-   
-
 
 module.exports = router;

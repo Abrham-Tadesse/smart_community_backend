@@ -2,6 +2,7 @@ const express = require("express");
 const router = new express.Router();
 const User = require("../model/users");
 const auth = require("../middleware/auth");
+const bcrypt = require("bcrypt");
 
 
 // Register the user
@@ -69,6 +70,27 @@ const auth = require("../middleware/auth");
        res.status(400).send(e.message);
       }
    })
+
+   // update passwsord 
+   router.patch("/me/password",auth,async(req,res)=>{
+        try {
+    const { currentPassword, newPassword } = req.body;
+    const isMatch = await bcrypt.compare(currentPassword, req.user.password);
+    if (!isMatch) {
+      return res.status(400).send({
+        error: "Current password is incorrect",
+      });
+    }
+    req.user.password = newPassword;
+    await req.user.save();
+    res.send({
+      message: "Password updated successfully",
+    });
+  } catch (e) {
+    res.status(500).send(e.message);
+  }
+   })
+
 // Logout all sessions 
    
  router.post("/logoutall",auth , async(req,res)=>{

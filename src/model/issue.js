@@ -35,6 +35,11 @@ const issueSchema = new mongoose.Schema({
     },
     default: 1,
   },
+   priorityScore: {
+    type: Number,
+    required: true,
+    default: 5,
+  },
   location: {
     type: String,
     required: true,
@@ -55,6 +60,10 @@ const issueSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  
+},
+{
+    timestamps : true
 });
 
 const Issue = mongoose.model("Issue", issueSchema);

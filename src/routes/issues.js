@@ -31,7 +31,7 @@ router.get("/", auth, async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const issue = await Issue.findById(req.params.id);
+    const issue = await Issue.findById(req.params.id).populate("creator", "name email");
 
     if (!issue) {
       return res.status(404).send({ message: "Issue not found" });

@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema({
         match: [/^(?:\+251|0)?9\d{8}$/, "Invalid phone number"],
         trim : true,
        },
+       role: {
+            type: String,
+            enum: ["user", "admin", "super_admin"],
+            default: "user"
+           },
        password : {
         type : String,
         required : true,
@@ -36,7 +41,7 @@ const userSchema = new mongoose.Schema({
             {
              throw new Error("The password must contain atleast 6 characters");
             }
-        }
+        }       
        },
        tokens : [{
         token : {

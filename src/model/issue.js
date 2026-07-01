@@ -40,6 +40,11 @@ const issueSchema = new mongoose.Schema({
     required: true,
     default: 5,
   },
+  status: {
+  type: String,
+  enum: ["submitted", "in progress", "resolved"],
+  default: "submitted",
+},
   location: {
     type: String,
     required: true,

@@ -5,6 +5,7 @@ const app = express();
 const userRouter = require("./routes/users.js");
 const issueRouter = require("./routes/issues.js");
 const commentRouter = require("./routes/comments.js");
+const adminRouter = require("./routes/admin.js")
 // const connectDB = require("./db/mongoose");
 
 app.use((req, res, next) => {
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/api/users", userRouter);
 app.use("/api/issues", issueRouter);
 app.use("/api/comments", commentRouter);
+app.use("/api/admin", adminRouter);
 
 app.listen(port, () => {
   console.log("Teh server is up on port " + port);

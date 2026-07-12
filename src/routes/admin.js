@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 router.get("/users", auth, admin, async (req, res) => {
   try {
     const users = await User.find().select("-password");
-    res.status(200).send(users);
+    res.status(200).send({users});
   } catch (e) {
     res.status(401).send(e);
   }
@@ -25,10 +25,9 @@ router.patch("/users/:id/role", auth, admin, async (req, res) => {
         message: "Invalid user id",
       });
     }
+    const { newRole } = req.body;
 
-    const { role } = req.body;
-
-    if (!["user", "admin"].includes(role)) {
+    if (!["user", "admin"].includes(newRole)) {
       return res.status(400).send({
         message: "Invalid role",
       });
@@ -42,7 +41,7 @@ router.patch("/users/:id/role", auth, admin, async (req, res) => {
       });
     }
 
-    user.role = role;
+    user.role = newRole;
 
     await user.save();
 
@@ -89,7 +88,7 @@ router.delete("/users/:id", auth, admin, async (req, res) => {
 router.get("/issues", auth, admin, async (req, res) => {
   try {
     const issues = await Issue.find().populate("creator", "name email");
-    res.status(200).send(issues);
+    res.status(200).send({issues});
   } catch (e) {
     res.status(500).send(e);
   }
@@ -127,7 +126,7 @@ router.patch("/issues/:id/status", auth, admin, async (req, res) => {
 
     await issue.save();
 
-    res.send(issue);
+    res.send({issue});
   } catch (e) {
     res.status(500).send({
       message: e.message,

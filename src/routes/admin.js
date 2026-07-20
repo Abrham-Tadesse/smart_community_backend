@@ -6,6 +6,7 @@ const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 const mongoose = require("mongoose");
 
+
 // Get all users
 router.get("/users", auth, admin, async (req, res) => {
   try {
@@ -32,7 +33,6 @@ router.patch("/users/:id/role", auth, admin, async (req, res) => {
         message: "Invalid role",
       });
     }
-
     const user = await User.findById(req.params.id);
 
     if (!user) {
@@ -56,26 +56,35 @@ router.patch("/users/:id/role", auth, admin, async (req, res) => {
   }
 });
 
-// DELETE users
+//CHANGE users status
 
-router.delete("/users/:id", auth, admin, async (req, res) => {
+router.patch("/users/:id", auth, admin, async (req, res) => {
+  console.log("route hit from the change status");
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).send({
         message: "Invalid user id",
       });
     }
+    const {newStatus} = req.body;
+     console.log(req.body);
+    console.log(newStatus);
 
-    const user = await User.findByIdAndDelete(req.params.id);
-
+    if(!["active", "disabled"].includes(newStatus)){
+       return res.status(400).send({
+        message : "Invalid status"
+       });
+    }
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).send({
         message: "User not found",
       });
     }
-
+    user.status = newStatus;
     res.send({
-      message: "User deleted successfully",
+      message: "User status updated successfully",
+      user,
     });
   } catch (e) {
     res.status(500).send({

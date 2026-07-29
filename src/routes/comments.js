@@ -3,7 +3,7 @@ const Comment = require("../model/comments");
 const auth = require("../middleware/auth");
 const router = express.Router();
 const mongoose = require("mongoose");
-
+const Activity = require("../model/activities");
 
 
 
@@ -16,6 +16,15 @@ router.post("/issues/:issueId/comments",auth,async(req,res)=>{
      user : req.user._id
    });
    await comment.save();
+
+       await Activity.create({
+       type: "comment",
+       message: `${req.user.name} commented on an issue`,
+       user: req.user._id,
+       issue: req.params.id,
+       comment : comment._id
+   });
+
    res.status(201).send(comment);
   }catch(e){
     res.status(400).send();

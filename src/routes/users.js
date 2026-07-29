@@ -3,6 +3,7 @@ const router = new express.Router();
 const User = require("../model/users");
 const auth = require("../middleware/auth");
 const bcrypt = require("bcrypt");
+const Activity = require("../model/activities");
 
 
 // Register the user
@@ -15,6 +16,13 @@ const bcrypt = require("bcrypt");
             }
         const user = new User(req.body); 
         await user.save();
+        
+            await Activity.create({
+            type: "user",
+            message: `${user.name} register new account`,
+            user: req.user._id,
+         });
+
         const token = await user.generateAuthTokens();
         res.status(201).send({user,token});
 

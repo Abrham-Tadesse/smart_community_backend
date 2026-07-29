@@ -3,6 +3,8 @@ const Issue = require("../model/issue");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const Comment = require("../model/comments");
+const Activity = require("../model/activities");
+
 
 // Creating an issue
 router.post("/", auth, async (req, res) => {
@@ -10,6 +12,14 @@ router.post("/", auth, async (req, res) => {
     const issue = new Issue({ ...req.body, creator: req.user._id });
     console.log("route hited");
     await issue.save();
+    
+    await Activity.create({
+    type: "issue",
+    message: `${req.user.name} reported a new issue: ${issue.title}`,
+    user: req.user._id,
+    issue: issue._id
+});
+
     res.status(201).send(issue);
   } catch (e) {
     console.log(e);

@@ -60,6 +60,10 @@ const issueSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  resolvedAt: {
+  type: Date,
+  default: null,
+},
   creator: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

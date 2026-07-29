@@ -2,6 +2,7 @@ const express = require("express");
 const router = new express.Router();
 const User = require("../model/users");
 const Issue = require("../model/issue");
+const Comment = require("../model/comments");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 const mongoose = require("mongoose");
@@ -81,7 +82,9 @@ router.patch("/users/:id", auth, admin, async (req, res) => {
         message: "User not found",
       });
     }
-    user.status = newStatus;
+     user.status = newStatus;
+     await user.save();
+
     res.send({
       message: "User status updated successfully",
       user,
@@ -176,31 +179,207 @@ router.delete("/issues/:id", auth, admin, async (req, res) => {
 router.get("/dashboard", auth, admin, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
-
     const totalIssues = await Issue.countDocuments();
-
     const submitted = await Issue.countDocuments({
       status: "submitted",
     });
-
     const inProgress = await Issue.countDocuments({
       status: "in progress",
     });
-
     const resolved = await Issue.countDocuments({
       status: "resolved",
     });
+    const activeUsers = await User.countDocuments({
+      status : "active"
+    });
+
+   const startOfWeek = new Date()
+   startOfWeek.setDate(startOfWeek.getDate() - 7)
+   const issuesThisWeek = await Issue.countDocuments({
+    createdAt: { $gte: startOfWeek }
+   });
+    const startLastWeek = new Date()
+    startLastWeek.setDate(startLastWeek.getDate() - 14)
+    const endLastWeek = new Date()
+    endLastWeek.setDate(endLastWeek.getDate() - 7)
+    const issuesLastWeek = await Issue.countDocuments({
+        createdAt: {
+            $gte: startLastWeek,
+            $lt: endLastWeek
+        }
+    });
+
+    console.log("issuesThisWeek:", issuesThisWeek, typeof issuesThisWeek);
+    console.log("issuesLastWeek:", issuesLastWeek, typeof issuesLastWeek);
+
+   const percentage =
+   issuesLastWeek === 0
+    ? (issuesThisWeek > 0 ? 100 : 0)
+    : Math.round(
+        ((issuesThisWeek - issuesLastWeek) / issuesLastWeek) * 100
+      );
+
+
+   // RESOLVATION RATE
+    const resolvedIssues = await Issue.find({
+    status: "resolved"
+    })
+    let total = 0
+    resolvedIssues.forEach(issue => {
+    total += issue.resolvedAt - issue.createdAt
+    })
+     
+    let averageResolutionDays = 0
+    if (resolvedIssues.length > 0) {
+    let total = 0
+    resolvedIssues.forEach(issue => {
+    total += issue.resolvedAt - issue.createdAt
+    })
+    averageResolutionDays =
+        (total / resolvedIssues.length) /
+        (1000 * 60 * 60 * 24)
+}
+// RESPONSE RATE CALCULATION 
+    const responseRate =
+      totalIssues === 0
+        ? 0
+        : Math.round(((inProgress + resolved) / totalIssues) * 100);
+
+    const targetResolutionDays = 2.5;
+
+
+                      // //  RECENT ACTIVITIES 
+                      //   const recentUsers = await User.find()
+                      //   .sort({ createdAt: -1 })
+                      //   .limit(5);
+
+                      //   const recentIssues = await Issue.find()
+                      //   .populate("creator", "name")
+                      //   .sort({ createdAt: -1 })
+                      //   .limit(5);
+
+                      //   const recentResolved = await Issue.find({
+                      //   status: "resolved",
+                      //   resolvedAt: { $ne: null }
+                      // })
+                      // .populate("creator", "name")
+                      // .sort({ resolvedAt: -1 })
+                      // .limit(5);
+
+
+                      // const recentActivities = [];
+
+                      // recentIssues.forEach(issue => {
+                      //   recentActivities.push({
+                      //     type: "issue",
+                      //     text: `${issue.title} was reported`,
+                      //     date: issue.createdAt
+                      //   });
+                      // });
+                      // recentUsers.forEach(user => {
+                      //   recentActivities.push({
+                      //     type: "user",
+                      //     text: `${user.name} registered`,
+                      //     date: user.createdAt
+                      //   });
+                      // });
+                      // recentActivities.sort((a, b) => b.date - a.date);
+                      // const latestActivities = recentActivities.slice(0, 10);
 
     res.send({
       totalUsers,
       totalIssues,
+      activeUsers,
       submitted,
       inProgress,
       resolved,
+      issuesThisWeek,
+      percentage,
+      averageResolutionDays,
+      responseRate,
+      targetResolutionDays,
     });
   } catch (e) {
     res.status(500).send({
       message: e.message,
+    });
+  }
+});
+
+// RECENT ACTIVITIES
+
+router.get("/recentActivities", auth, admin, async (req, res) => {
+  try {
+
+    const recentUsers = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("name createdAt");
+
+    const recentIssues = await Issue.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("title createdAt");
+
+    const recentResolved = await Issue.find({
+      status: "resolved"
+    })
+      .sort({ resolvedAt: -1 })
+      .limit(5)
+      .select("title resolvedAt");
+
+    const recentComments = await Comment.find()
+      .populate("user", "name")
+      .populate("issue", "title")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    let activities = [];
+
+    recentUsers.forEach(user => {
+      activities.push({
+        type: "user",
+        text: `New user registered: ${user.name}`,
+        time: user.createdAt
+      });
+    });
+
+    recentIssues.forEach(issue => {
+      
+      activities.push({
+        type: "issue",
+        text: `New issue reported: ${issue.title}`,
+        time: issue.createdAt
+      });
+    });
+
+    recentResolved.forEach(issue => {
+     
+      activities.push({
+        type: "resolve",
+        text: `Issue resolved: ${issue.title}`,
+        time: issue.resolvedAt
+      });
+    });
+
+    recentComments.forEach(comment => {
+      
+      activities.push({
+        type: "comment",
+        text: `${comment.user.name} commented on "${comment.issue.title}"`,
+        time: comment.createdAt
+      });
+    });
+
+    activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+    res.send({
+      activities: activities.slice(0, 10)
+    });
+
+  } catch (e) {
+    res.status(500).send({
+      message: e.message
     });
   }
 });

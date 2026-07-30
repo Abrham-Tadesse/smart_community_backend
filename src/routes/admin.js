@@ -209,8 +209,6 @@ router.get("/dashboard", auth, admin, async (req, res) => {
         }
     });
 
-    console.log("issuesThisWeek:", issuesThisWeek, typeof issuesThisWeek);
-    console.log("issuesLastWeek:", issuesLastWeek, typeof issuesLastWeek);
 
    const percentage =
    issuesLastWeek === 0
@@ -338,40 +336,43 @@ router.get("/recentActivities", auth, admin, async (req, res) => {
 
     recentUsers.forEach(user => {
       activities.push({
+        _id : user._id,
         type: "user",
-        text: `New user registered: ${user.name}`,
-        time: user.createdAt
+        message: `New user registered: ${user.name}`,
+        createdAt: user.createdAt
       });
     });
 
     recentIssues.forEach(issue => {
       
       activities.push({
+        _id : issue._id,
         type: "issue",
-        text: `New issue reported: ${issue.title}`,
-        time: issue.createdAt
+        message: `New issue reported: ${issue.title}`,
+        createdAt: issue.createdAt
       });
     });
 
     recentResolved.forEach(issue => {
      
       activities.push({
+        _id : issue._id,
         type: "resolve",
-        text: `Issue resolved: ${issue.title}`,
-        time: issue.resolvedAt
+        message: `Issue resolved: ${issue.title}`,
+        resolvedAt : issue.resolvedAt
       });
     });
 
     recentComments.forEach(comment => {
-      
       activities.push({
+        _id : comment._id,
         type: "comment",
-        text: `${comment.user.name} commented on "${comment.issue.title}"`,
-        time: comment.createdAt
+        message: `${comment.user.name} commented on "${comment.issue.title}"`,
+        createdAt: comment.createdAt
       });
     });
 
-    activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+    activities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res.send({
       activities: activities.slice(0, 10)

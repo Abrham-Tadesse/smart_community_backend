@@ -106,7 +106,7 @@ router.get("/issues", auth, admin, async (req, res) => {
   }
 });
 
-// Change the atatus of the issue
+// Change the status of the issue
 
 router.patch("/issues/:id/status", auth, admin, async (req, res) => {
   try {
@@ -115,27 +115,20 @@ router.patch("/issues/:id/status", auth, admin, async (req, res) => {
         message: "Invalid issue id",
       });
     }
-
-    const { status } = req.body;
-
+    const { newStatus } = req.body;
     const allowedStatus = ["submitted", "in progress", "resolved"];
-
-    if (!allowedStatus.includes(status)) {
+    if (!allowedStatus.includes(newStatus)) {
       return res.status(400).send({
         message: "Invalid status",
       });
     }
-
     const issue = await Issue.findById(req.params.id);
-
     if (!issue) {
       return res.status(404).send({
         message: "Issue not found",
       });
     }
-
-    issue.status = status;
-
+    issue.status = newStatus;
     await issue.save();
 
     res.send({issue});
@@ -245,44 +238,6 @@ router.get("/dashboard", auth, admin, async (req, res) => {
 
     const targetResolutionDays = 2.5;
 
-
-                      // //  RECENT ACTIVITIES 
-                      //   const recentUsers = await User.find()
-                      //   .sort({ createdAt: -1 })
-                      //   .limit(5);
-
-                      //   const recentIssues = await Issue.find()
-                      //   .populate("creator", "name")
-                      //   .sort({ createdAt: -1 })
-                      //   .limit(5);
-
-                      //   const recentResolved = await Issue.find({
-                      //   status: "resolved",
-                      //   resolvedAt: { $ne: null }
-                      // })
-                      // .populate("creator", "name")
-                      // .sort({ resolvedAt: -1 })
-                      // .limit(5);
-
-
-                      // const recentActivities = [];
-
-                      // recentIssues.forEach(issue => {
-                      //   recentActivities.push({
-                      //     type: "issue",
-                      //     text: `${issue.title} was reported`,
-                      //     date: issue.createdAt
-                      //   });
-                      // });
-                      // recentUsers.forEach(user => {
-                      //   recentActivities.push({
-                      //     type: "user",
-                      //     text: `${user.name} registered`,
-                      //     date: user.createdAt
-                      //   });
-                      // });
-                      // recentActivities.sort((a, b) => b.date - a.date);
-                      // const latestActivities = recentActivities.slice(0, 10);
 
     res.send({
       totalUsers,

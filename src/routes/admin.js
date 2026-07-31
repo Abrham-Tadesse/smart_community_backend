@@ -129,7 +129,29 @@ router.patch("/issues/:id/status", auth, admin, async (req, res) => {
       });
     }
     issue.status = newStatus;
-    await issue.save();
+
+    const oldStatus = issue.status;
+    issue.status = newStatus;
+   if (oldStatus !== "resolved" && newStatus === "resolved") {
+  issue.resolvedAt = new Date();
+  await Activity.create({
+    type: "resolve",
+    message: `${req.user.name} resolved the issue: ${issue.title}`,
+    user: req.user._id,
+    issue: issue._id,
+  });
+}
+
+if (oldStatus === "resolved" && newStatus !== "resolved") {
+  await Activity.create({
+    type: "status",
+    message: `${req.user.name} reopened the issue: ${issue.title}`,
+    user: req.user._id,
+    issue: issue._id,
+  });
+}
+
+await issue.save();
 
     res.send({issue});
   } catch (e) {
@@ -182,6 +204,9 @@ router.get("/dashboard", auth, admin, async (req, res) => {
     const resolved = await Issue.countDocuments({
       status: "resolved",
     });
+
+    const pending = parseInt(inProgress) + parseInt(submitted);
+
     const activeUsers = await User.countDocuments({
       status : "active"
     });
@@ -246,6 +271,7 @@ router.get("/dashboard", auth, admin, async (req, res) => {
       submitted,
       inProgress,
       resolved,
+      pending,
       issuesThisWeek,
       percentage,
       averageResolutionDays,

@@ -4,84 +4,92 @@ const User = require("../model/users");
 const auth = require("../middleware/auth");
 const bcrypt = require("bcrypt");
 const Activity = require("../model/activities");
-
+const Notification = require("../model/notification");
 
 // Register the user
-  router.post("/", async(req,res)=>{
-       try{
-            const existingUser = await User.findOne({ email: req.body.email });
+router.post("/", async (req, res) => {
+  try {
+    const existingUser = await User.findOne({ email: req.body.email });
 
-            if (existingUser) {
-               return res.status(400).send("Email already exists");
-            }
-        const user = new User(req.body); 
-        await user.save();
-        
-            await Activity.create({
-            type: "user",
-            message: `${user.name} register new account`,
-            user: req.user._id,
-         });
+    if (existingUser) {
+      return res.status(400).send("Email already exists");
+    }
+    const user = new User(req.body);
+    await user.save();
 
-        const token = await user.generateAuthTokens();
-        res.status(201).send({user,token});
-
-       }catch(e){
-        if(e.code === 11000){
-           res.status(400).send("The email is already exist ");
-        }
-        res.status(400).send(e.message + "from the server");
-       }
-  })
-// Login a user 
-    router.post("/login",async(req,res)=>{
-      try{
-         const user = await User.findByCredential(req.body.email, req.body.password);
-         const token = await user.generateAuthTokens();
-         res.send({user,token});
-      }catch(e){
-         res.status(400).send({"message":"please try again"});
-
-      }
-    })
-// Logout the user 
-      router.post("/logout",auth,async(req,res)=>{
-         try{
-            
-         req.user.tokens = req.user.tokens.filter((token)=>{
-         return token.token !== req.token;
-      })
-      req.user.save();
-      res.status(200).send({
-      message: "Logged out successfully"
+    await Activity.create({
+      type: "user",
+      message: `${user.name} register new account`,
+      user: req.user._id,
     });
-         }catch(e){
-        res.status(400).send(e.message);
-         }
-      })
-// Update profile
-   router.patch("/me",auth, async(req,res)=>{
-      const updates = Object.keys(req.body);
-      const allowedUpdates = ["name","email","password","phone"];
-      const isAllowed = updates.every((update)=>allowedUpdates.includes(update));
-      const user = req.user;
-      if(!isAllowed) {
-         res.status(400).send({"message":"You can`t update some values please check and try again"});
-      }
-      try{
-         updates.forEach((update)=>{
-            user[update] = req.body[update];
-         })
-         await user.save();
-         res.send(user);
-      }catch(e){
-       res.status(400).send(e.message);
-      }
-   })
 
-   // update passwsord 
-   router.patch("/me/password",auth,async(req,res)=>{
-        try {
+    const admin = await User.findOne({ role: "admin" });
+    await Notification.create({
+      recipient: admin._id,
+      message: "New user has registered",
+      type: "new_user",
+    });
+
+    const token = await user.generateAuthTokens();
+    res.status(201).send({ user, token });
+  } catch (e) {
+    if (e.code === 11000) {
+      res.status(400).send("The email is already exist ");
+    }
+    res.status(400).send(e.message + "from the server");
+  }
+});
+// Login a user
+router.post("/login", async (req, res) => {
+  try {
+    const user = await User.findByCredential(req.body.email, req.body.password);
+    const token = await user.generateAuthTokens();
+    res.send({ user, token });
+  } catch (e) {
+    res.status(400).send({ message: "please try again" });
+  }
+});
+// Logout the user
+router.post("/logout", auth, async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter((token) => {
+      return token.token !== req.token;
+    });
+    req.user.save();
+    res.status(200).send({
+      message: "Logged out successfully",
+    });
+  } catch (e) {
+    res.status(400).send(e.message);
+  }
+});
+// Update profile
+router.patch("/me", auth, async (req, res) => {
+  const updates = Object.keys(req.body);
+  const allowedUpdates = ["name", "email", "password", "phone"];
+  const isAllowed = updates.every((update) => allowedUpdates.includes(update));
+  const user = req.user;
+  if (!isAllowed) {
+    res
+      .status(400)
+      .send({
+        message: "You can`t update some values please check and try again",
+      });
+  }
+  try {
+    updates.forEach((update) => {
+      user[update] = req.body[update];
+    });
+    await user.save();
+    res.send(user);
+  } catch (e) {
+    res.status(400).send(e.message);
+  }
+});
+
+// update passwsord
+router.patch("/me/password", auth, async (req, res) => {
+  try {
     const { currentPassword, newPassword } = req.body;
     const isMatch = await bcrypt.compare(currentPassword, req.user.password);
     if (!isMatch) {
@@ -97,62 +105,51 @@ const Activity = require("../model/activities");
   } catch (e) {
     res.status(500).send(e.message);
   }
-   })
+});
 
-// Logout all sessions 
-   
- router.post("/logoutall",auth , async(req,res)=>{
-    try{
-      req.user.tokens = [];
-     await req.user.save();
+// Logout all sessions
 
-    res.status(200).send({"message" : "You logged out successfully"});
-   }catch(e){
-      res.status(500).send();
-   }
- })
+router.post("/logoutall", auth, async (req, res) => {
+  try {
+    req.user.tokens = [];
+    await req.user.save();
+
+    res.status(200).send({ message: "You logged out successfully" });
+  } catch (e) {
+    res.status(500).send();
+  }
+});
 // ACCESSING A USERS
-        router.get("/me",auth, async(req,res) => {
-            try{
-           res.send(req.user);
-
-            }catch(e){
-                res.status(500).send("internal server error");
-            }
-        })
+router.get("/me", auth, async (req, res) => {
+  try {
+    res.send(req.user);
+  } catch (e) {
+    res.status(500).send("internal server error");
+  }
+});
 
 //ACCESSING SINGLE USER
-        router.get("/:id", async (req,res)=>{
-            const _id = req.params.id;
-            try{
-                const user = await User.findById(_id);
-                if(!user){
-                    return res.status(404).send();
-
-                }
-                res.status(200).send(user);
-
-            }catch(e){
-                res.status(500).send();
-
-            }
-        })
+router.get("/:id", async (req, res) => {
+  const _id = req.params.id;
+  try {
+    const user = await User.findById(_id);
+    if (!user) {
+      return res.status(404).send();
+    }
+    res.status(200).send(user);
+  } catch (e) {
+    res.status(500).send();
+  }
+});
 
 //DELETING A USER
-       router.delete("/me",auth, async(req,res)=>{
-          try{
-          await req.user.deleteOne();
-           res.send(req.user);
+router.delete("/me", auth, async (req, res) => {
+  try {
+    await req.user.deleteOne();
+    res.send(req.user);
+  } catch (e) {
+    res.status(500).send("you do not delete the account");
+  }
+});
 
-          }catch(e){
-            res.status(500).send("you do not delete the account");
-          }
-       })
-      
-
-
-
-
-
-
-  module.exports = router;
+module.exports = router;

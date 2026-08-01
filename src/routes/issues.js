@@ -4,7 +4,7 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const Comment = require("../model/comments");
 const Activity = require("../model/activities");
-
+const Notification = require("../model/notification");
 
 // Creating an issue
 router.post("/", auth, async (req, res) => {
@@ -12,13 +12,21 @@ router.post("/", auth, async (req, res) => {
     const issue = new Issue({ ...req.body, creator: req.user._id });
     console.log("route hited");
     await issue.save();
-    
+
     await Activity.create({
-    type: "issue",
-    message: `${req.user.name} reported a new issue: ${issue.title}`,
-    user: req.user._id,
-    issue: issue._id
-});
+      type: "issue",
+      message: `${req.user.name} reported a new issue: ${issue.title}`,
+      user: req.user._id,
+      issue: issue._id,
+    });
+
+    const admin = await User.findOne({ role: "admin" });
+    await Notification.create({
+      recipient  : admin._id,
+      message : "New issue was reported",
+      type : "new_issue",
+      issue : issue._id
+    })
 
     res.status(201).send(issue);
   } catch (e) {
@@ -41,7 +49,10 @@ router.get("/", auth, async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const issue = await Issue.findById(req.params.id).populate("creator", "name email");
+    const issue = await Issue.findById(req.params.id).populate(
+      "creator",
+      "name email",
+    );
 
     if (!issue) {
       return res.status(404).send({ message: "Issue not found" });

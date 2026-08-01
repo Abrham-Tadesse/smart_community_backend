@@ -1,5 +1,5 @@
 const express = require("express");
-const Notification = require("../model/notfication");
+const Notification = require("../model/notification");
 const auth = require("../middleware/auth");
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.patch("/notifications", auth, async (req, res) => {
   try {
     await Notification.updateMany(
       { user: req.user._id, read: false },
-      { read: true }
+      { read: true },
     );
 
     res.send({ message: "All notifications marked as read" });
@@ -30,10 +30,5 @@ router.patch("/notifications", auth, async (req, res) => {
     res.status(500).send();
   }
 });
-
-
-
-
-
 
 module.exports = router;

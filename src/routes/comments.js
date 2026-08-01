@@ -4,6 +4,7 @@ const auth = require("../middleware/auth");
 const router = express.Router();
 const mongoose = require("mongoose");
 const Activity = require("../model/activities");
+const Notification = require("../model/notification");
 
 
 
@@ -24,6 +25,15 @@ router.post("/issues/:issueId/comments",auth,async(req,res)=>{
        issue: req.params.id,
        comment : comment._id
    });
+
+   const admin = await User.findOne({ role: "admin" });
+      await Notification.create({
+        recipient : admin._id,
+        message  : "New comment is written ",
+        type  : "new_comment",
+        issue : comment.issue,
+        comment : comment._id,
+      });
 
    res.status(201).send(comment);
   }catch(e){

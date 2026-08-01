@@ -22,13 +22,20 @@ router.post("/", async (req, res) => {
       message: `${user.name} register new account`,
       user: req.user._id,
     });
-
+     // NOTIFCATION FOR ADMINS 
     const admin = await User.findOne({ role: "admin" });
     await Notification.create({
       recipient: admin._id,
       message: "New user has registered",
       type: "new_user",
     });
+
+    // NOTIFICATION FOR USERS
+    await Notification.create({
+      recipient : user._id,
+      message : `Wellcome ${user.name}`,
+      type : "welcome",
+    })
 
     const token = await user.generateAuthTokens();
     res.status(201).send({ user, token });

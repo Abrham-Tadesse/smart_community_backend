@@ -6,6 +6,8 @@ const Comment = require("../model/comments");
 const auth = require("../middleware/auth");
 const admin = require("../middleware/admin");
 const mongoose = require("mongoose");
+const Notification = require("../model/notification");
+
 
 
 // Get all users
@@ -46,6 +48,14 @@ router.patch("/users/:id/role", auth, admin, async (req, res) => {
 
     await user.save();
 
+// CREATING A NOTIFICATION
+    await Notification.create({
+      recipient : user._id,
+      message : `Your role is changed to ${user.role}`,
+      type : "status_changed"
+    })
+
+
     res.send({
       message: "Role updated successfully",
       user,
@@ -60,7 +70,7 @@ router.patch("/users/:id/role", auth, admin, async (req, res) => {
 //CHANGE users status
 
 router.patch("/users/:id", auth, admin, async (req, res) => {
-  console.log("route hit from the change status");
+  // console.log("route hit from the change status");
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).send({
@@ -84,6 +94,13 @@ router.patch("/users/:id", auth, admin, async (req, res) => {
     }
      user.status = newStatus;
      await user.save();
+
+     //CREATING A NOTIFICATION
+      await Notification.create({
+        recipient : user._id,
+        message : `Your account has ${user.status==="active" ? "activated" : "disabled"}`,
+        type : user.status==="active"? "account_enabled" : "account_disabled"
+      })
 
     res.send({
       message: "User status updated successfully",
@@ -150,10 +167,21 @@ if (oldStatus === "resolved" && newStatus !== "resolved") {
     issue: issue._id,
   });
 }
-
 await issue.save();
 
-    res.send({issue});
+if (issue.status === "resolved"){
+
+  await Notification.create({
+   recipient : issue.user,
+   message : "Your issue is resolved",
+   type : "issue_resolved",
+   issue : issue._id
+  })
+  
+}
+
+
+res.send({issue});
   } catch (e) {
     res.status(500).send({
       message: e.message,

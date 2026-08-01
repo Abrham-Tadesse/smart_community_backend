@@ -17,11 +17,12 @@ const notificationSchema = new mongoose.Schema(
         "new_issue",
         "new_user",
         "new_comment",
-        
+
         "status_changed", //for users
         "account_disabled", //for users
         "account_enabled",  //for users
-        "welcome" //for users
+        "welcome", //for users
+        "issue_resolved", //for users
     ],
         required: true
     },

@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
     await Activity.create({
       type: "user",
       message: `${user.name} register new account`,
-      user: req.user._id,
+      user: user._id,
     });
      // NOTIFCATION FOR ADMINS 
     const admin = await User.findOne({ role: "admin" });

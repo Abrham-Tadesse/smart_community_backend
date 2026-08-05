@@ -5,6 +5,7 @@ const auth = require("../middleware/auth");
 const Comment = require("../model/comments");
 const Activity = require("../model/activities");
 const Notification = require("../model/notification");
+const User = require("../model/users");
 
 // Creating an issue
 router.post("/", auth, async (req, res) => {
@@ -15,8 +16,8 @@ router.post("/", auth, async (req, res) => {
 
     await Activity.create({
       type: "issue",
-      message: `${req.user.name} reported a new issue: ${issue.title}`,
-      user: req.user._id,
+      message: `${issue.creator.name} reported a new issue: ${issue.title}`,
+      user: issue.creator,
       issue: issue._id,
     });
 

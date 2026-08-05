@@ -24,9 +24,9 @@ router.patch("/readAll", auth, async (req, res) => {
     await Notification.updateMany(
       { 
         recipient: req.user._id, 
-        read: false 
+        isRead: false 
       },
-      { read: true },
+      { isRead: true },
     );
 
     res.send({ message: "All notifications marked as read" });

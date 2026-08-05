@@ -357,7 +357,7 @@ router.get("/recentActivities", auth, admin, async (req, res) => {
       activities.push({
         _id : issue._id,
         type: "issue",
-        message: `New issue reported: ${issue.title}`,
+        message: `New issue reported: ${issue?.title}`,
         createdAt: issue.createdAt
       });
     });
@@ -367,7 +367,7 @@ router.get("/recentActivities", auth, admin, async (req, res) => {
       activities.push({
         _id : issue._id,
         type: "resolve",
-        message: `Issue resolved: ${issue.title}`,
+        message: `Issue resolved: ${issue?.title}`,
         resolvedAt : issue.resolvedAt
       });
     });
@@ -376,7 +376,7 @@ router.get("/recentActivities", auth, admin, async (req, res) => {
       activities.push({
         _id : comment._id,
         type: "comment",
-        message: `${comment.user.name} commented on "${comment.issue.title}"`,
+        message: `${comment.user.name} commented on "${comment.issue?.title}"`,
         createdAt: comment.createdAt
       });
     });
